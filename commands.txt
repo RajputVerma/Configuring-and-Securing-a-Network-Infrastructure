@@ -1,0 +1,167 @@
+# Commands Reference
+# Project: Configuring and Securing a Network Infrastructure
+# This file is aligned with the project PDF structure and report sections
+
+==================================================
+SECTION 1 – Cisco Router Commands
+==================================================
+
+# Enter privileged mode
+enable
+
+# Enter global configuration mode
+configure terminal
+
+# Interface Configuration (IP Addressing)
+interface gigabitEthernet0/0
+ip address 192.168.10.1 255.255.255.0
+no shutdown
+exit
+
+# ------------------------------------------------
+# Firewall Configuration (ACL - Access Control List)
+# ------------------------------------------------
+# Remove existing ACL (if needed)
+no access-list 100
+
+# Allow internal network
+access-list 100 permit ip 192.168.10.0 0.0.0.255 any
+
+# Deny all other traffic
+access-list 100 deny ip any any
+
+# Apply ACL to interface
+interface gigabitEthernet0/0
+ip access-group 100 in
+exit
+
+# ------------------------------------------------
+# QoS Configuration (Traffic Priority)
+# ------------------------------------------------
+# Match ICMP traffic
+access-list 101 permit icmp any any
+
+# Create class-map
+class-map match-all IMPORTANT
+match access-group 101
+
+# Create policy-map and assign priority bandwidth
+policy-map QOS-POLICY
+class IMPORTANT
+priority 1000
+exit
+
+# Apply policy to interface
+interface gigabitEthernet0/0
+service-policy output QOS-POLICY
+exit
+
+# ------------------------------------------------
+# Secure Management (SSH Configuration)
+# ------------------------------------------------
+hostname SecureRouter
+ip domain-name lab.local
+
+# Generate RSA keys
+crypto key generate rsa
+1024
+
+# Create local admin user
+username admin secret Admin@123
+
+# Enable SSH version 2
+ip ssh version 2
+
+# Configure VTY lines
+line vty 0 4
+login local
+transport input ssh
+exit
+
+# ------------------------------------------------
+# Monitoring and Verification
+# ------------------------------------------------
+do show ip interface brief
+do show access-lists
+do show policy-map interface gigabitEthernet0/0
+do show ip ssh
+do show running-config | section line vty
+
+
+==================================================
+SECTION 2 – Cisco Switch Commands
+==================================================
+
+# Enter privileged mode
+enable
+
+# Enter global configuration mode
+configure terminal
+
+# ------------------------------------------------
+# VLAN Configuration
+# ------------------------------------------------
+vlan 10
+name STAFF
+exit
+
+vlan 20
+name ADMIN
+exit
+
+# ------------------------------------------------
+# Port Assignment
+# ------------------------------------------------
+# PC1 Port -> VLAN 10
+interface fastEthernet0/1
+switchport mode access
+switchport access vlan 10
+exit
+
+# PC2 Port -> VLAN 20
+interface fastEthernet0/2
+switchport mode access
+switchport access vlan 20
+exit
+
+# ------------------------------------------------
+# VLAN Verification
+# ------------------------------------------------
+do show vlan brief
+
+
+==================================================
+SECTION 3 – Windows Host Commands
+==================================================
+
+# Check IP Configuration
+ipconfig
+
+# Allow ICMP (Ping) Through Firewall
+netsh advfirewall firewall add rule name="Allow_Ping" dir=in action=allow protocol=ICMPv4
+
+# Allow HTTP Traffic (Optional)
+netsh advfirewall firewall add rule name="Allow_HTTP" dir=in action=allow protocol=TCP localport=80
+
+
+==================================================
+SECTION 4 – Kali Linux Commands (Optional / Security Testing)
+==================================================
+
+# Check IP Address
+ip a
+
+# Ping Test
+ping 192.168.10.1
+
+# Network Discovery Scan
+nmap -sn 192.168.10.0/24
+
+# Port Scan
+nmap -sS 192.168.10.1
+
+# Network Monitoring
+sudo wireshark
+
+
+
